@@ -65,6 +65,14 @@ new AppUpdater(this, "https://raw.githubusercontent.com/p32929/SomeHowTosAndText
         }).execute();
 ```
 
+the JSON data should be like below:
+```
+{
+	"versionCode": 1, // Updated version code
+	"forceUpdate": false, // If you want to force users to update the app
+	"url": "http://tiny.cc/BuySellBD" // If you want users to update the app from an External URL or from the Google Play URL
+}
+```
 
 Hope you will enjoy using the library :)
 Thanks :)
