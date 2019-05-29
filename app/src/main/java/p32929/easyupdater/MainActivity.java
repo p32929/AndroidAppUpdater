@@ -16,17 +16,5 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        new AppUpdater(this, "https://raw.githubusercontent.com/p32929/SomeHowTosAndTexts/master/BuySellBD/updater.json", new UpdateListener() {
-            @Override
-            public void onSuccess(UpdateModel updateModel) {
-                Log.d(TAG, "onSuccess: URL: " + updateModel.getUrl());
-            }
-
-            @Override
-            public void onFailed(String error) {
-                Log.d(TAG, "onFailed: " + error);
-            }
-        }).execute();
     }
 }

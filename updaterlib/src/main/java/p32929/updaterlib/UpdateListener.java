@@ -1,6 +1,6 @@
 package p32929.updaterlib;
 
 public interface UpdateListener {
-    void onSuccess(UpdateModel updateModel);
-    void onFailed(String error);
+    void onUpdateAvailable(UpdateModel updateModel);
+    void onError(String error);
 }

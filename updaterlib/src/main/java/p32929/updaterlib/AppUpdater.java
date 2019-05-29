@@ -1,6 +1,8 @@
 package p32929.updaterlib;
 
 import android.content.Context;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
@@ -36,10 +38,10 @@ public class AppUpdater extends AsyncTask<Void, Void, UpdateModel> {
             Log.d(TAG, "onPreExecute: context == null || listener == null || jsonUrl == null");
             cancel(true);
         } else if (!isNetworkAvailable(context)) {
-            listener.onFailed("Please check your network connection");
+            listener.onError("Please check your network connection");
             cancel(true);
         } else if (jsonUrl.isEmpty()) {
-            listener.onFailed("Please provide a valid JSON URL");
+            listener.onError("Please provide a valid JSON URL");
             cancel(true);
         }
     }
@@ -70,9 +72,11 @@ public class AppUpdater extends AsyncTask<Void, Void, UpdateModel> {
     protected void onPostExecute(UpdateModel updateModel) {
         super.onPostExecute(updateModel);
         if (listener != null && updateModel != null) {
-            listener.onSuccess(updateModel);
+            if (getCurrentVersionCode(context) < updateModel.getVersionCode()) {
+                listener.onUpdateAvailable(updateModel);
+            }
         } else {
-            listener.onFailed("Unknown error");
+            listener.onError("Unknown error");
         }
     }
 
@@ -81,5 +85,19 @@ public class AppUpdater extends AsyncTask<Void, Void, UpdateModel> {
                 = (ConnectivityManager) ctx.getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
         return activeNetworkInfo != null && activeNetworkInfo.isConnected();
+    }
+
+    private int getCurrentVersionCode(Context context) {
+        PackageInfo pInfo = null;
+        try {
+            pInfo = context.getPackageManager().getPackageInfo(context.getPackageName(), 0);
+        } catch (PackageManager.NameNotFoundException e) {
+            e.printStackTrace();
+        }
+
+        if (pInfo != null)
+            return pInfo.versionCode;
+
+        return 0;
     }
 }
