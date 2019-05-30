@@ -47,7 +47,7 @@ new AppUpdater(this, "https://raw.githubusercontent.com/p32929/SomeHowTosAndText
             public void onUpdateAvailable(final UpdateModel updateModel) {
                 new AlertDialog.Builder(MainActivity.this)
                         .setTitle("Update available")
-                        .setCancelable(updateModel.isForceUpdate())
+                        .setCancelable(!updateModel.isForceUpdate())
                         .setPositiveButton("Update", new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
