@@ -2,12 +2,12 @@ package p32929.updaterlib;
 
 public class UpdateModel {
     int versionCode;
-    boolean forceUpdate;
+    boolean cancellable;
     String url;
 
-    public UpdateModel(int versionCode, boolean forceUpdate, String url) {
+    public UpdateModel(int versionCode, boolean cancellable, String url) {
         this.versionCode = versionCode;
-        this.forceUpdate = forceUpdate;
+        this.cancellable = cancellable;
         this.url = url;
     }
 
@@ -19,12 +19,12 @@ public class UpdateModel {
         this.versionCode = versionCode;
     }
 
-    public boolean isForceUpdate() {
-        return forceUpdate;
+    public boolean isCancellable() {
+        return cancellable;
     }
 
-    public void setForceUpdate(boolean forceUpdate) {
-        this.forceUpdate = forceUpdate;
+    public void setCancellable(boolean cancellable) {
+        this.cancellable = cancellable;
     }
 
     public String getUrl() {

@@ -8,6 +8,7 @@ import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.util.Log;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
@@ -16,7 +17,7 @@ import java.io.InputStreamReader;
 import java.net.URL;
 import java.nio.charset.Charset;
 
-public class AppUpdater extends AsyncTask<Void, Void, UpdateModel> {
+public class AppUpdater extends AsyncTask<Void, Void, JSONObject> {
 
     String TAG = getClass().getSimpleName();
 
@@ -47,7 +48,7 @@ public class AppUpdater extends AsyncTask<Void, Void, UpdateModel> {
     }
 
     @Override
-    protected UpdateModel doInBackground(Void... voids) {
+    protected JSONObject doInBackground(Void... voids) {
         try {
             URL url = new URL(jsonUrl);
             InputStream is = url.openStream();
@@ -58,9 +59,10 @@ public class AppUpdater extends AsyncTask<Void, Void, UpdateModel> {
             while ((cp = bufferedReader.read()) != -1) {
                 sb.append((char) cp);
             }
-            JSONObject jsonObject = new JSONObject(sb.toString());
-            UpdateModel updateModel = new UpdateModel(jsonObject.getInt("versionCode"), jsonObject.getBoolean("forceUpdate"), jsonObject.getString("url"));
-            return updateModel;
+
+            Log.d(TAG, "doInBackground: JSON DATA: " + sb.toString());
+
+            return new JSONObject(sb.toString());
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -69,14 +71,24 @@ public class AppUpdater extends AsyncTask<Void, Void, UpdateModel> {
     }
 
     @Override
-    protected void onPostExecute(UpdateModel updateModel) {
-        super.onPostExecute(updateModel);
-        if (listener != null && updateModel != null) {
-            if (getCurrentVersionCode(context) < updateModel.getVersionCode()) {
-                listener.onUpdateAvailable(updateModel);
+    protected void onPostExecute(JSONObject jsonObject) {
+        super.onPostExecute(jsonObject);
+
+        if (jsonObject != null) {
+            try {
+                UpdateModel updateModel = new UpdateModel(
+                        jsonObject.getInt("versionCode"),
+                        jsonObject.getBoolean("cancellable"),
+                        jsonObject.getString("url")
+                );
+
+                listener.onJsonDataReceived(updateModel, jsonObject);
+
+            } catch (JSONException e) {
+                e.printStackTrace();
             }
         } else {
-            listener.onError("Unknown error");
+            listener.onError("JSON data null");
         }
     }
 
@@ -87,7 +99,7 @@ public class AppUpdater extends AsyncTask<Void, Void, UpdateModel> {
         return activeNetworkInfo != null && activeNetworkInfo.isConnected();
     }
 
-    private int getCurrentVersionCode(Context context) {
+    public static int getCurrentVersionCode(Context context) {
         PackageInfo pInfo = null;
         try {
             pInfo = context.getPackageManager().getPackageInfo(context.getPackageName(), 0);

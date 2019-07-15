@@ -14,7 +14,7 @@ allprojects {
 Add the dependency
 ```
 dependencies {
-     implementation 'com.github.p32929:AndroidAppUpdater:1.0.1'
+     implementation 'com.github.p32929:AndroidAppUpdater:1.0.2'
 }
 ```
 
@@ -29,7 +29,7 @@ In your Activity or Fragment, you can add the code below:
 ```
 new AppUpdater(this, "https://raw.githubusercontent.com/p32929/SomeHowTosAndTexts/master/BuySellBD/updater.json", new UpdateListener() {
             @Override
-            public void onUpdateAvailable(final UpdateModel updateModel) {
+            public void onJsonDataReceived(final UpdateModel updateModel) {
                 // Do something here
             }
 
@@ -44,7 +44,7 @@ If you want to show a dialog, when an update is available, you can use the code 
 ```
 new AppUpdater(this, "https://raw.githubusercontent.com/p32929/SomeHowTosAndTexts/master/BuySellBD/updater.json", new UpdateListener() {
             @Override
-            public void onUpdateAvailable(final UpdateModel updateModel) {
+            public void onJsonDataReceived(final UpdateModel updateModel) {
                 new AlertDialog.Builder(MainActivity.this)
                         .setTitle("Update available")
                         .setCancelable(!updateModel.isForceUpdate())
@@ -69,7 +69,7 @@ the JSON data should be like below:
 ```
 {
 	"versionCode": 1, // Updated version code
-	"forceUpdate": false, // If you want to force users to update the app
+	"cancellable": false, // If you want to force users to update the app
 	"url": "http://tiny.cc/BuySellBD" // If you want users to update the app from an External URL or from the Google Play URL
 }
 ```
