@@ -27,40 +27,27 @@ Steps to follow:
 ## Code example
 In your Activity or Fragment, you can add the code below:
 ```
-new AppUpdater(this, "https://raw.githubusercontent.com/p32929/SomeHowTosAndTexts/master/BuySellBD/updater.json", new UpdateListener() {
+new AppUpdater(this, "https://raw.githubusercontent.com/p32929/SomeHowTosAndTexts/master/Updater/updater.json", new UpdateListener() {
             @Override
-            public void onJsonDataReceived(final UpdateModel updateModel) {
-                // Do something here
+            public void onJsonDataReceived(final UpdateModel updateModel, JSONObject jsonObject) {
+                if (AppUpdater.getCurrentVersionCode(MainActivity.this) < updateModel.getVersionCode()) {
+                    new AlertDialog.Builder(MainActivity.this)
+                            .setTitle("Update available")
+                            .setCancelable(updateModel.isCancellable())
+                            .setPositiveButton("Update", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(updateModel.getUrl()));
+                                    startActivity(browserIntent);
+                                }
+                            })
+                            .show();
+                }
             }
 
             @Override
             public void onError(String error) {
-                // Check if there's any error
-            }
-        }).execute();
-```
-
-If you want to show a dialog, when an update is available, you can use the code below:
-```
-new AppUpdater(this, "https://raw.githubusercontent.com/p32929/SomeHowTosAndTexts/master/BuySellBD/updater.json", new UpdateListener() {
-            @Override
-            public void onJsonDataReceived(final UpdateModel updateModel) {
-                new AlertDialog.Builder(MainActivity.this)
-                        .setTitle("Update available")
-                        .setCancelable(!updateModel.isForceUpdate())
-                        .setPositiveButton("Update", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(updateModel.getUrl()));
-                                startActivity(browserIntent);
-                            }
-                        })
-                        .show();
-            }
-
-            @Override
-            public void onError(String error) {
-                // Check if there's any error
+                // Do something
             }
         }).execute();
 ```
@@ -73,6 +60,8 @@ the JSON data should be like below:
 	"url": "http://tiny.cc/BuySellBD" // If you want users to update the app from an External URL or from the Google Play URL
 }
 ```
+
+If you add more data in the JSON file, you can get them from the `jsonObject` variable.
 
 Hope you will enjoy using the library :)
 Thanks :)
