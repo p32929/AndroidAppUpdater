@@ -39,6 +39,7 @@ new AppUpdater(this, "https://raw.githubusercontent.com/p32929/SomeHowTosAndText
                                 public void onClick(DialogInterface dialog, int which) {
                                     Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(updateModel.getUrl()));
                                     startActivity(browserIntent);
+                                    finish();
                                 }
                             })
                             .show();
