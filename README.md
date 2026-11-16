@@ -1,79 +1,128 @@
 # AndroidAppUpdater
 
-A simple, lightweight update checker for Android apps. It reads a JSON file you host yourself, compares the version code with the installed one, and hands you the result — you decide what dialog or snackbar to show.
+A small update checker for Android apps. You host one JSON file anywhere (GitHub, your server, S3). The library reads it, compares the version with the installed app, and can show a ready-made update dialog, or just hand you the data.
 
-## Features
+1. **You host the JSON:** no Play Services, no update SDK.
+2. **Built-in dialog:** shows the new version and what's new, and follows your app's theme in light and dark mode.
+3. **Forced updates:** set `"cancellable": false` and the dialog has no "Later" button.
+4. **Or build your own UI:** get the parsed data and the whole JSON in a callback.
+5. **Tiny:** a few small classes, written in Kotlin, works from Java too. Min SDK 21.
 
-- **You host the JSON** — GitHub raw, S3, your own server, anything reachable over HTTP
-- **Forceable updates** — a `cancellable` flag in the JSON lets you block the app until the user updates
-- **No UI imposed on you** — the library gives you the data, you build the dialog
-- **Tiny** — one class, no dependency on Play Services or any update SDK
+## Screenshots
 
-## Installation
-Add it in your root build.gradle at the end of repositories:
-```gradle
-allprojects {
-  repositories {
-    maven { url 'https://jitpack.io' }
-  }
+| Light | Dark |
+|---|---|
+| ![Light](docs/screenshots/light.png) | ![Dark](docs/screenshots/dark.png) |
+
+## Install
+
+1. Add JitPack in `settings.gradle.kts`:
+
+```kotlin
+dependencyResolutionManagement {
+    repositories {
+        google()
+        mavenCentral()
+        maven("https://jitpack.io")
+    }
 }
 ```
 
-Add the dependency
-```gradle
+2. Add the dependency:
+
+```kotlin
 dependencies {
-     implementation 'com.github.p32929:AndroidAppUpdater:1.0.2'
+    implementation("com.github.p32929:AndroidAppUpdater:2.0.0")
 }
 ```
 
-## Basic Usage
-Steps to follow:
-* Create new `new AppUpdater(context, jsonUrl, listener)`
-* Execute the task
-* Do something if update is available
+## The JSON file
 
-## Code example
-In your Activity or Fragment, you can add the code below:
-```java
-new AppUpdater(this, "https://raw.githubusercontent.com/p32929/SomeHowTosAndTexts/master/Updater/updater.json", new UpdateListener() {
-            @Override
-            public void onJsonDataReceived(final UpdateModel updateModel, JSONObject jsonObject) {
-                if (AppUpdater.getCurrentVersionCode(MainActivity.this) < updateModel.getVersionCode()) {
-                    new AlertDialog.Builder(MainActivity.this)
-                            .setTitle("Update available")
-                            .setCancelable(updateModel.isCancellable())
-                            .setPositiveButton("Update", new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
-                                    Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(updateModel.getUrl()));
-                                    startActivity(browserIntent);
-                                    finish();
-                                }
-                            })
-                            .show();
-                }
-            }
-
-            @Override
-            public void onError(String error) {
-                // Do something
-            }
-        }).execute();
-```
-
-the JSON data should be like below:
-```
+```json
 {
-	"versionCode": 1, // Updated version code
-	"cancellable": false, // If you want to force users to update the app
-	"url": "http://tiny.cc/BuySellBD" // If you want users to update the app from an External URL or from the Google Play URL
+  "versionCode": 2,
+  "cancellable": true,
+  "url": "https://play.google.com/store/apps/details?id=your.app",
+  "versionName": "2.0.0",
+  "changelog": "1. A fresh new look\n2. Bug fixes"
 }
 ```
 
-If you add more data in the JSON file, you can get them from the `jsonObject` variable.
+1. `versionCode` (required): the version code of the newest release.
+2. `cancellable` (required): `false` forces the user to update.
+3. `url` (required): where the Update button takes the user, like Google Play or a download page.
+4. `versionName` and `changelog` (optional): shown in the built-in dialog.
+5. Any other fields you add are passed to you in the callback.
 
-Hope you will enjoy using the library :)
-Thanks :)
+There is a working example in [docs/sample-update.json](docs/sample-update.json).
+
+## Usage
+
+### The easy way
+
+Call this in your activity, for example in `onCreate`. It shows the dialog only when a newer version is out.
+
+Kotlin:
+
+```kotlin
+AppUpdater.check(this, "https://example.com/update.json")
+```
+
+Java:
+
+```java
+AppUpdater.check(this, "https://example.com/update.json");
+```
+
+The activity must use an AppCompat or Material theme. With a Material 3 theme the dialog looks like Material 3.
+
+### Your own UI
+
+Kotlin:
+
+```kotlin
+AppUpdater(this, jsonUrl, object : UpdateListener {
+    override fun onJsonDataReceived(updateModel: UpdateModel, jsonObject: JSONObject) {
+        if (updateModel.isNewerThanInstalled(this@MainActivity)) {
+            // Show your own UI, or the built-in one:
+            AppUpdater.showDialog(this@MainActivity, updateModel)
+        }
+    }
+
+    override fun onError(error: String) {
+        // No internet, bad URL or bad JSON
+    }
+}).execute()
+```
+
+Java:
+
+```java
+new AppUpdater(this, jsonUrl, new UpdateListener() {
+    @Override
+    public void onJsonDataReceived(UpdateModel updateModel, JSONObject jsonObject) {
+        if (updateModel.isNewerThanInstalled(MainActivity.this)) {
+            AppUpdater.showDialog(MainActivity.this, updateModel);
+        }
+    }
+
+    @Override
+    public void onError(String error) {
+    }
+}).execute();
+```
+
+Callbacks run on the main thread. They are skipped if the activity is already closing.
+
+## Migrating from 1.x
+
+Most code keeps working. `new AppUpdater(context, url, listener).execute()`, `UpdateListener`, `UpdateModel.getVersionCode()`, `isCancellable()`, `getUrl()` and `AppUpdater.getCurrentVersionCode(context)` are all the same.
+
+1. Change the dependency to `com.github.p32929:AndroidAppUpdater:2.0.0` and use the JitPack line above.
+2. `AppUpdater` is no longer an `AsyncTask`, so `cancel()` and `executeOnExecutor()` are gone. Just call `execute()`.
+3. The library no longer checks the network first, so the "Please check your network connection" error is gone. Network problems now come to `onError` with the real reason.
+4. The `ACCESS_NETWORK_STATE` permission is no longer added to your app.
+5. Your old JSON files work as they are.
 
 ## License
 

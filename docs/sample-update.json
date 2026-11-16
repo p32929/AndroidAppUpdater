@@ -1,0 +1,7 @@
+{
+	"versionCode": 2,
+	"cancellable": true,
+	"url": "https://github.com/p32929/AndroidAppUpdater/releases",
+	"versionName": "2.0.0",
+	"changelog": "1. A fresh new look\n2. Faster start\n3. Bug fixes"
+}

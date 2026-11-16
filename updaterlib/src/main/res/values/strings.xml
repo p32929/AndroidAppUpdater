@@ -1,3 +1,8 @@
 <resources>
-    <string name="app_name">UpdaterLib</string>
+    <string name="updater_title">Update available</string>
+    <string name="updater_message">Version %1$s is ready to install.</string>
+    <string name="updater_message_forced">Version %1$s is ready. Please update to keep using the app.</string>
+    <string name="updater_whats_new">What\'s new</string>
+    <string name="updater_update">Update</string>
+    <string name="updater_later">Later</string>
 </resources>

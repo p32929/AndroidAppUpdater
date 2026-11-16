@@ -1,6 +1,3 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="p32929.updaterlib">
-
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <uses-permission android:name="android.permission.INTERNET" />
 </manifest>
